@@ -56,17 +56,34 @@ button{font:inherit;cursor:pointer}
 .bgfx .paws{position:absolute;inset:0;width:100%;height:100%;opacity:.13;color:var(--paw)}
 .pets{position:absolute;left:0;right:0;bottom:0;width:100%;height:auto;max-height:190px}
 .hill{fill:var(--hill)}.hill2{fill:var(--hill2)}
-.fish{position:absolute;left:0;width:84px;height:56px;animation:swim 34s linear infinite;opacity:.95}
-.fish svg{width:100%;height:100%;animation:bob 3.2s ease-in-out infinite}
-.fish.f2{width:60px;height:40px;animation-duration:46s;animation-delay:-20s}
-.fish.f2 svg{animation-duration:2.6s}
-@keyframes swim{from{transform:translateX(-120px)}to{transform:translateX(calc(100vw + 120px))}}
+.fish{position:absolute;left:0;animation-timing-function:linear;animation-iteration-count:infinite;opacity:.95}
+.fish.big{width:96px;height:64px}.fish.sm{width:46px;height:31px}
+.fish.L{animation-name:swimL}.fish.R{animation-name:swimR}
+.fish svg{width:100%;height:100%;overflow:visible;animation:bob 3s ease-in-out infinite}
+@keyframes swimR{from{transform:translateX(-140px)}to{transform:translateX(calc(100vw + 140px))}}
+@keyframes swimL{from{transform:translateX(calc(100vw + 140px))}to{transform:translateX(-140px)}}
+.tongue{transform-origin:65px 73px;animation:pant .7s ease-in-out infinite}
+@keyframes pant{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.18)}}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
 .bub{position:absolute;bottom:-20px;width:12px;height:12px;border-radius:50%;border:2px solid #7fb8ff;opacity:.5;animation:rise 12s linear infinite}
 @keyframes rise{to{transform:translateY(-105vh)}}
 .tail{transform-origin:100px 118px;animation:wag 2.4s ease-in-out infinite}
 @keyframes wag{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(8deg)}}
-@media(prefers-reduced-motion:reduce){.fish,.fish svg,.bub,.tail{animation:none}.fish{left:60%;top:70px}}
+@media(prefers-reduced-motion:reduce){.fish,.fish svg,.bub,.tail,.tongue{animation:none}.fish{left:calc(6% + var(--i)*7%)}}
+.dnav{display:flex;align-items:center;gap:8px;margin-bottom:10px}.dnav h2{flex:1;text-align:center;margin:0;font-size:1.15rem}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}.chip{padding:6px 14px;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--tx);font-size:.85rem}.chip.on{background:var(--pri);color:var(--pri-tx);border-color:var(--pri);font-weight:700}
+.dgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}.stat span{color:var(--mut);font-size:.82rem}.stat b{display:block;font-size:1.9rem;line-height:1.2}
+.stat.ok b{color:var(--ok)}.stat.warn b{color:var(--warn)}.stat.bad b{color:var(--bad)}
+.pbar{flex:1;height:12px;background:var(--line);border-radius:99px;overflow:hidden}.pbar i{display:block;height:100%;background:var(--ok);border-radius:99px;transition:width .4s}
+.ychart{display:flex;gap:5px;align-items:flex-end;height:170px}
+.ycol{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;height:100%;padding:0;background:none;border:0;color:var(--mut);font-size:.72rem}
+.ycol em{font-style:normal;font-size:.72rem;min-height:1em}
+.ybar{width:100%;max-width:34px;background:var(--line);border-radius:6px 6px 0 0;display:flex;align-items:flex-end;overflow:hidden}
+.ydone{width:100%;background:var(--ok)}
+.ycol.on{color:var(--pri);font-weight:700}.ycol.on .ybar{outline:2px solid var(--pri)}
+.orow{display:flex;align-items:center;gap:10px;margin-bottom:8px}.oname{width:34%;min-width:80px;font-size:.9rem;word-break:break-word}.onum{width:44px;text-align:right;font-size:.85rem;color:var(--mut)}
+@media(max-width:700px){.dgrid{grid-template-columns:repeat(2,1fr)}.ycol span{font-size:.62rem}}
 @media(max-width:700px){.form{grid-template-columns:1fr 1fr}.form .f-title,.form .f-btn{grid-column:1/-1}.task{flex-direction:column}.acts{justify-content:flex-start}}
 </style>
 </head>
@@ -89,7 +106,7 @@ button{font:inherit;cursor:pointer}
  <ellipse cx="65" cy="68" rx="14" ry="10" fill="#fff" stroke="#e3e7f0" stroke-width="1.5"/>
  <ellipse cx="65" cy="62" rx="6.5" ry="4.5" fill="#2b2b3a"/>
  <path d="M65 66V71M58 72Q65 78 72 72" fill="none" stroke="#2b2b3a" stroke-width="2" stroke-linecap="round"/>
- <ellipse cx="65" cy="79" rx="5" ry="6" fill="#ff8fa8"/>
+ <g class="tongue"><path d="M58.5 73Q58 89 65 89Q72 89 71.5 73Z" fill="#ff7f9c"/><path d="M65 75V84" stroke="#e35d80" stroke-width="1.6" stroke-linecap="round"/></g>
 </symbol>
 <symbol id="cat" viewBox="0 0 130 145">
  <path class="tail" d="M92 120C128 122 128 78 110 82" fill="none" stroke="#f5a04a" stroke-width="13" stroke-linecap="round"/>
@@ -125,11 +142,11 @@ button{font:inherit;cursor:pointer}
  <path d="M34 60l-14-3M34 66l-14 3M86 60l14-3M86 66l14 3" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".9"/>
 </symbol>
 <symbol id="gf" viewBox="0 0 90 60">
- <path d="M58 30C74 8 90 10 87 30C90 50 74 52 58 30Z" fill="#ff9a3c"/>
- <path d="M24 12Q38-4 52 12Z" fill="#ff9a3c"/>
- <ellipse cx="38" cy="30" rx="30" ry="20" fill="#ff7f1f"/>
- <ellipse cx="38" cy="38" rx="20" ry="9" fill="#ffc07a" opacity=".7"/>
- <path d="M46 20q6 10 0 20M56 22q5 8 0 16" fill="none" stroke="#ff9a3c" stroke-width="2" stroke-linecap="round"/>
+ <path d="M58 30C74 8 90 10 87 30C90 50 74 52 58 30Z" style="fill:var(--f,#ff9a3c);stroke:var(--st,none)" stroke-width="1.4"/>
+ <path d="M24 12Q38-4 52 12Z" style="fill:var(--f,#ff9a3c);stroke:var(--st,none)" stroke-width="1.4"/>
+ <ellipse cx="38" cy="30" rx="30" ry="20" style="fill:var(--b,#ff7f1f);stroke:var(--st,none)" stroke-width="1.4"/>
+ <ellipse cx="38" cy="38" rx="20" ry="9" style="fill:var(--bl,#ffc07a)" opacity=".7"/>
+ <path d="M46 20q6 10 0 20M56 22q5 8 0 16" fill="none" style="stroke:var(--f,#ff9a3c)" stroke-width="2" stroke-linecap="round"/>
  <circle cx="19" cy="26" r="5" fill="#fff"/><circle cx="18" cy="26" r="2.6" fill="#2b2b3a"/>
  <ellipse cx="14" cy="36" rx="4" ry="2.6" fill="#ff8fa8" opacity=".7"/>
  <path d="M9 32q3 3 6 0" fill="none" stroke="#a04a10" stroke-width="1.6" stroke-linecap="round"/>
@@ -139,8 +156,19 @@ button{font:inherit;cursor:pointer}
 <div class="bgfx" aria-hidden="true">
  <svg class="paws"><defs><pattern id="paw" width="150" height="150" patternUnits="userSpaceOnUse" patternTransform="rotate(-18)"><g fill="currentColor"><ellipse cx="30" cy="34" rx="8" ry="7"/><circle cx="17" cy="22" r="3.6"/><circle cx="25" cy="15" r="3.6"/><circle cx="36" cy="15" r="3.6"/><circle cx="43" cy="22" r="3.6"/><path d="M105 110c-3-6-9-6-11 0-2 6 3 10 5.5 10s7.500-4 5.500-10zM97 120c-2 0-6 5-3 8s6 0 6 0 4 3 6 0-1-8-3-8z" opacity=".8" transform="translate(-2 -6) scale(.9)"/></g></pattern></defs><rect width="100%" height="100%" fill="url(#paw)"/></svg>
  <span class="bub" style="left:8%;animation-delay:-2s"></span><span class="bub" style="left:22%;width:8px;height:8px;animation-delay:-7s"></span><span class="bub" style="left:47%;animation-delay:-4s"></span><span class="bub" style="left:71%;width:9px;height:9px;animation-delay:-9s"></span><span class="bub" style="left:90%;animation-delay:-1s"></span>
- <div class="fish" style="top:16%"><svg><use href="#gf"/></svg></div>
- <div class="fish f2" style="top:42%"><svg><use href="#gf"/></svg></div>
+ <div class="fish L big" style="top:14%;animation-duration:38s;animation-delay:-5s;--i:0;--b:#ffc21a;--f:#ffd84d;--bl:#ffe9a0;--st:#d9a000"><svg viewBox="0 0 90 60" style="animation-delay:0.0s"><use href="#gf" width="90" height="60"/></svg></div>
+ <div class="fish R big" style="top:50%;animation-duration:44s;animation-delay:-22s;--i:1;--b:#ffc21a;--f:#ffd84d;--bl:#ffe9a0;--st:#d9a000"><svg viewBox="0 0 90 60" style="animation-delay:-0.6s"><use href="#gf" width="90" height="60" transform="translate(90 0) scale(-1 1)"/></svg></div>
+ <div class="fish L big" style="top:31%;animation-duration:42s;animation-delay:-12s;--i:2;--b:#2a2a35;--f:#3d3d4d;--bl:#4c4c5e;--st:#15151c"><svg viewBox="0 0 90 60" style="animation-delay:-1.2s"><use href="#gf" width="90" height="60"/></svg></div>
+ <div class="fish R big" style="top:22%;animation-duration:40s;animation-delay:-30s;--i:3;--b:#ffffff;--f:#f3f5fa;--bl:#e8ecf4;--st:#c5ccdb"><svg viewBox="0 0 90 60" style="animation-delay:-1.7999999999999998s"><use href="#gf" width="90" height="60" transform="translate(90 0) scale(-1 1)"/></svg></div>
+ <div class="fish L big" style="top:58%;animation-duration:47s;animation-delay:-8s;--i:4;--b:#ffffff;--f:#f3f5fa;--bl:#e8ecf4;--st:#c5ccdb"><svg viewBox="0 0 90 60" style="animation-delay:-2.4s"><use href="#gf" width="90" height="60"/></svg></div>
+ <div class="fish R sm" style="top:8%;animation-duration:26s;animation-delay:-3s;--i:5;--b:#ff7f1f;--f:#ff9a3c;--bl:#ffc07a;--st:none"><svg viewBox="0 0 90 60" style="animation-delay:0.0s"><use href="#gf" width="90" height="60" transform="translate(90 0) scale(-1 1)"/></svg></div>
+ <div class="fish L sm" style="top:18%;animation-duration:30s;animation-delay:-14s;--i:6;--b:#ff7f1f;--f:#ff9a3c;--bl:#ffc07a;--st:none"><svg viewBox="0 0 90 60" style="animation-delay:-0.6s"><use href="#gf" width="90" height="60"/></svg></div>
+ <div class="fish R sm" style="top:26%;animation-duration:24s;animation-delay:-9s;--i:7;--b:#ff7f1f;--f:#ff9a3c;--bl:#ffc07a;--st:none"><svg viewBox="0 0 90 60" style="animation-delay:-1.2s"><use href="#gf" width="90" height="60" transform="translate(90 0) scale(-1 1)"/></svg></div>
+ <div class="fish L sm" style="top:36%;animation-duration:34s;animation-delay:-20s;--i:8;--b:#ff7f1f;--f:#ff9a3c;--bl:#ffc07a;--st:none"><svg viewBox="0 0 90 60" style="animation-delay:-1.7999999999999998s"><use href="#gf" width="90" height="60"/></svg></div>
+ <div class="fish R sm" style="top:44%;animation-duration:28s;animation-delay:-2s;--i:9;--b:#ff7f1f;--f:#ff9a3c;--bl:#ffc07a;--st:none"><svg viewBox="0 0 90 60" style="animation-delay:-2.4s"><use href="#gf" width="90" height="60" transform="translate(90 0) scale(-1 1)"/></svg></div>
+ <div class="fish L sm" style="top:53%;animation-duration:22s;animation-delay:-11s;--i:10;--b:#ff7f1f;--f:#ff9a3c;--bl:#ffc07a;--st:none"><svg viewBox="0 0 90 60" style="animation-delay:0.0s"><use href="#gf" width="90" height="60"/></svg></div>
+ <div class="fish R sm" style="top:62%;animation-duration:32s;animation-delay:-17s;--i:11;--b:#ff7f1f;--f:#ff9a3c;--bl:#ffc07a;--st:none"><svg viewBox="0 0 90 60" style="animation-delay:-0.6s"><use href="#gf" width="90" height="60" transform="translate(90 0) scale(-1 1)"/></svg></div>
+ <div class="fish L sm" style="top:12%;animation-duration:36s;animation-delay:-26s;--i:12;--b:#ff7f1f;--f:#ff9a3c;--bl:#ffc07a;--st:none"><svg viewBox="0 0 90 60" style="animation-delay:-1.2s"><use href="#gf" width="90" height="60"/></svg></div>
  <svg class="pets" viewBox="0 0 900 190" preserveAspectRatio="xMidYMax meet">
   <path class="hill2" d="M0 190V150Q220 110 450 140T900 128V190Z"/>
   <path class="hill" d="M0 190V165Q200 135 430 160T900 152V190Z"/>
@@ -160,6 +188,7 @@ button{font:inherit;cursor:pointer}
   <div class="tabs">
     <button class="tab on" data-t="dept">🏫 งานแผนกวิชา<span class="badge" id="b-dept">0</span></button>
     <button class="tab" data-t="personal">👤 งานส่วนตัว<span class="badge" id="b-personal">0</span></button>
+    <button class="tab" data-t="dash">📊 แดชบอร์ด</button>
   </div>
   <div id="view"></div>
 </div>
@@ -208,9 +237,49 @@ window.FIREBASE_CONFIG = {
     return '<div class="task '+(t.done?"done":s.c)+'"><div class="main"><div class="title">'+esc(t.title)+'</div><div class="meta"><span>📅 '+esc(fmtDate(t))+(t.time?' · ⏰ '+esc(t.time)+' น.':'')+'</span><span>👤 '+esc(t.owner||"ไม่ระบุ")+'</span>'+pill+(t.done&&t.doneAt?'<span>ส่งเมื่อ '+new Date(t.doneAt).toLocaleString("th-TH",{dateStyle:"medium",timeStyle:"short"})+'</span>':'')+'</div></div><div class="acts">'+acts+'</div></div>';
   }
 
+  var dashY=new Date().getFullYear(), dashM=new Date().getMonth(), dashS="all";
+  var THS=["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+  var THF=["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
+  function ymKey(y,m){return y+"-"+(m<9?"0":"")+(m+1)}
+  function isDone(t){return !!t.done}
+  function isOver(t){return !t.done&&dueDate(t)<new Date()}
+
+  function renderDash(){
+    var pool=tasks.filter(function(t){return dashS==="all"||t.scope===dashS});
+    var mt=pool.filter(function(t){return t.due.slice(0,7)===ymKey(dashY,dashM)});
+    var total=mt.length, done=mt.filter(isDone).length, pend=total-done, over=mt.filter(isOver).length;
+    var rate=total?Math.round(done*100/total):0;
+    var mo=[];for(var i=0;i<12;i++){var arr=pool.filter(function(t){return t.due.slice(0,7)===ymKey(dashY,i)});mo.push({t:arr.length,d:arr.filter(isDone).length})}
+    var max=Math.max.apply(null,mo.map(function(x){return x.t}).concat([1]));
+    var h='<div class="dnav"><button class="sm" data-dn="-1">‹</button><h2>📊 '+THF[dashM]+' '+(dashY+543)+'</h2><button class="sm" data-dn="1">›</button><button class="sm" data-dn="0">เดือนนี้</button></div>';
+    h+='<div class="chips">';
+    [["all","ทั้งหมด"],["dept","งานแผนกวิชา"],["personal","งานส่วนตัว"]].forEach(function(c){h+='<button class="chip'+(dashS===c[0]?' on':'')+'" data-ds="'+c[0]+'">'+c[1]+'</button>'});
+    h+='</div>';
+    h+='<div class="dgrid"><div class="stat"><span>งานทั้งหมด</span><b>'+total+'</b></div><div class="stat ok"><span>ส่งแล้ว</span><b>'+done+'</b></div><div class="stat warn"><span>ยังค้างอยู่</span><b>'+pend+'</b></div><div class="stat bad"><span>เลยกำหนด</span><b>'+over+'</b></div></div>';
+    h+='<div class="card"><div class="sec" style="margin:0 0 8px"><h2>ความคืบหน้าเดือนนี้</h2><span class="count">'+rate+'%</span></div><div class="pbar"><i style="width:'+rate+'%"></i></div></div>';
+    h+='<div class="card"><div class="sec" style="margin:0 0 10px"><h2>ภาพรวมทั้งปี '+(dashY+543)+'</h2><span class="count">แท่งเขียว = ส่งแล้ว · กดเพื่อเลือกเดือน</span></div><div class="ychart">';
+    mo.forEach(function(x,i){var hh=Math.round(x.t/max*100);var dh=x.t?Math.round(x.d*100/x.t):0;
+      h+='<button class="ycol'+(i===dashM?' on':'')+'" data-m="'+i+'"><em>'+(x.t||'')+'</em><div class="ybar" style="height:'+(x.t?Math.max(hh,4):2)+'px"><div class="ydone" style="height:'+dh+'%"></div></div><span>'+THS[i]+'</span></button>'});
+    h+='</div></div>';
+    var by={};mt.forEach(function(t){var k=(t.owner||"").trim()||"ไม่ระบุ";by[k]=by[k]||{t:0,d:0};by[k].t++;if(t.done)by[k].d++});
+    var ks=Object.keys(by).sort(function(a,b){return by[b].t-by[a].t});
+    h+='<div class="card"><div class="sec" style="margin:0 0 10px"><h2>👤 แยกตามผู้รับผิดชอบ</h2><span class="count">'+ks.length+' คน</span></div>';
+    h+=ks.length?ks.map(function(k){var o=by[k];return '<div class="orow"><div class="oname">'+esc(k)+'</div><div class="pbar"><i style="width:'+Math.round(o.d*100/o.t)+'%"></i></div><div class="onum">'+o.d+'/'+o.t+'</div></div>'}).join(""):'<div class="empty">ไม่มีงานในเดือนนี้</div>';
+    h+='</div>';
+    var pl=mt.filter(function(t){return !t.done}).sort(function(a,b){return dueDate(a)-dueDate(b)});
+    h+='<div class="sec"><h2>⏳ งานค้างของเดือนนี้</h2><span class="count">'+pl.length+' รายการ</span></div>';
+    h+=pl.length?pl.map(taskHTML).join(""):'<div class="empty">'+(total?'🎉 เคลียร์งานเดือนนี้ครบแล้ว':'ไม่มีงานในเดือนนี้')+'</div>';
+    view.innerHTML=h;
+    view.querySelectorAll("[data-dn]").forEach(function(b){b.onclick=function(){var d=+b.dataset.dn;if(d===0){var n=new Date();dashY=n.getFullYear();dashM=n.getMonth()}else{dashM+=d;if(dashM<0){dashM=11;dashY--}if(dashM>11){dashM=0;dashY++}}renderDash()}});
+    view.querySelectorAll("[data-ds]").forEach(function(b){b.onclick=function(){dashS=b.dataset.ds;renderDash()}});
+    view.querySelectorAll(".ycol").forEach(function(b){b.onclick=function(){dashM=+b.dataset.m;renderDash()}});
+    bind();
+  }
+
   function render(){
     renderBadges();
     document.querySelectorAll(".tab").forEach(function(b){b.classList.toggle("on",b.dataset.t===tab)});
+    if(tab==="dash"){renderDash();return}
     if(tab==="personal"&&!unlocked){
       view.innerHTML='<div class="card lock"><div style="font-size:2rem">🔐</div><b>งานส่วนตัว</b><div class="sub">กรอกรหัส 4 หลักเพื่อเข้าดู</div><input id="pin" type="password" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="••••"><div class="err" id="perr"></div><button class="btn" id="pinOk">ปลดล็อก</button></div>';
       var go=function(){
