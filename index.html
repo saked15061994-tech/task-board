@@ -40,6 +40,13 @@ button{font:inherit;cursor:pointer}
 .meta{display:flex;flex-wrap:wrap;gap:6px 14px;color:var(--mut);font-size:.85rem;margin-top:4px}
 .pill{padding:1px 9px;border-radius:99px;font-size:.78rem;font-weight:700}
 .pill.over{background:var(--badbg);color:var(--bad)}.pill.soon{background:var(--warnbg);color:var(--warn)}.pill.ok{background:var(--okbg);color:var(--ok)}
+.pill.doing{background:color-mix(in srgb,var(--pri) 16%,transparent);color:var(--pri)}
+.pill.fin{background:color-mix(in srgb,#0e9aa7 18%,transparent);color:#0e9aa7}
+.sm.cur{color:#fff;font-weight:700}
+.sm.st-doing.cur{background:var(--pri);border-color:var(--pri);color:var(--pri-tx)}
+.sm.st-finished.cur{background:#0e9aa7;border-color:#0e9aa7}
+.sm.st-submitted.cur{background:var(--ok);border-color:var(--ok)}
+.stat.doing b{color:var(--pri)}.stat.fin b{color:#0e9aa7}
 .acts{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
 .sm{padding:7px 11px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--tx);font-size:.85rem}
 .sm.ok{background:var(--ok);border-color:var(--ok);color:#fff;font-weight:700}
@@ -72,7 +79,7 @@ button{font:inherit;cursor:pointer}
 @media(prefers-reduced-motion:reduce){.fish,.fish svg,.bub,.tail,.tongue{animation:none}.fish{left:calc(6% + var(--i)*7%)}}
 .dnav{display:flex;align-items:center;gap:8px;margin-bottom:10px}.dnav h2{flex:1;text-align:center;margin:0;font-size:1.15rem}
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}.chip{padding:6px 14px;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--tx);font-size:.85rem}.chip.on{background:var(--pri);color:var(--pri-tx);border-color:var(--pri);font-weight:700}
-.dgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px}
 .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}.stat span{color:var(--mut);font-size:.82rem}.stat b{display:block;font-size:1.9rem;line-height:1.2}
 .stat.ok b{color:var(--ok)}.stat.warn b{color:var(--warn)}.stat.bad b{color:var(--bad)}
 .pbar{flex:1;height:12px;background:var(--line);border-radius:99px;overflow:hidden}.pbar i{display:block;height:100%;background:var(--ok);border-radius:99px;transition:width .4s}
@@ -83,7 +90,7 @@ button{font:inherit;cursor:pointer}
 .ydone{width:100%;background:var(--ok)}
 .ycol.on{color:var(--pri);font-weight:700}.ycol.on .ybar{outline:2px solid var(--pri)}
 .orow{display:flex;align-items:center;gap:10px;margin-bottom:8px}.oname{width:34%;min-width:80px;font-size:.9rem;word-break:break-word}.onum{width:44px;text-align:right;font-size:.85rem;color:var(--mut)}
-@media(max-width:700px){.dgrid{grid-template-columns:repeat(2,1fr)}.ycol span{font-size:.62rem}}
+@media(max-width:700px){.ycol span{font-size:.62rem}}
 @media(max-width:700px){.form{grid-template-columns:1fr 1fr}.form .f-title,.form .f-btn{grid-column:1/-1}.task{flex-direction:column}.acts{justify-content:flex-start}}
 </style>
 </head>
@@ -223,7 +230,9 @@ window.FIREBASE_CONFIG = {
     return {c:"",l:""};
   }
   function byTab(k){return tasks.filter(function(t){return t.scope===k})}
-  function pendingCount(k){return byTab(k).filter(function(t){return !t.done}).length}
+  var ST=[{k:"doing",l:"กำลังดำเนินการ"},{k:"finished",l:"เสร็จแล้ว"},{k:"submitted",l:"ส่งแล้ว"}];
+  function stOf(t){return t.status||(t.done?"submitted":"doing")}
+  function pendingCount(k){return byTab(k).filter(function(t){return stOf(t)!=="submitted"}).length}
 
   function renderBadges(){
     $("#b-dept").textContent=pendingCount("dept");
@@ -231,18 +240,20 @@ window.FIREBASE_CONFIG = {
   }
 
   function taskHTML(t){
-    var s=t.done?{c:"done"}:status(t);
-    var pill=t.done?'<span class="pill ok">ส่งแล้ว</span>':(s.l?'<span class="pill '+s.c+'">'+s.l+'</span>':'');
-    var acts=canWrite?(t.done?'<button class="sm" data-a="undo" data-id="'+t.id+'">↩ ยกเลิกส่ง</button>':'<button class="sm ok" data-a="done" data-id="'+t.id+'">✓ ยืนยันส่งแล้ว</button>')+'<button class="sm del" data-a="del" data-id="'+t.id+'">ลบ</button>':'';
-    return '<div class="task '+(t.done?"done":s.c)+'"><div class="main"><div class="title">'+esc(t.title)+'</div><div class="meta"><span>📅 '+esc(fmtDate(t))+(t.time?' · ⏰ '+esc(t.time)+' น.':'')+'</span><span>👤 '+esc(t.owner||"ไม่ระบุ")+'</span>'+pill+(t.done&&t.doneAt?'<span>ส่งเมื่อ '+new Date(t.doneAt).toLocaleString("th-TH",{dateStyle:"medium",timeStyle:"short"})+'</span>':'')+'</div></div><div class="acts">'+acts+'</div></div>';
+    var st=stOf(t), sub=st==="submitted";
+    var s=sub?{c:"done"}:status(t);
+    var lab=ST.filter(function(x){return x.k===st})[0].l;
+    var pill='<span class="pill '+(sub?"ok":st==="finished"?"fin":"doing")+'">'+lab+'</span>'+((!sub&&s.l)?'<span class="pill '+s.c+'">'+s.l+'</span>':'');
+    var acts=canWrite?ST.map(function(x){return '<button class="sm st-'+x.k+(st===x.k?' cur':'')+'" data-a="set" data-s="'+x.k+'" data-id="'+t.id+'">'+x.l+'</button>'}).join('')+'<button class="sm del" data-a="del" data-id="'+t.id+'">ลบ</button>':'';
+    return '<div class="task '+(sub?"done":s.c)+'"><div class="main"><div class="title">'+esc(t.title)+'</div><div class="meta"><span>📅 '+esc(fmtDate(t))+(t.time?' · ⏰ '+esc(t.time)+' น.':'')+'</span><span>👤 '+esc(t.owner||"ไม่ระบุ")+'</span>'+pill+(sub&&t.doneAt?'<span>ส่งเมื่อ '+new Date(t.doneAt).toLocaleString("th-TH",{dateStyle:"medium",timeStyle:"short"})+'</span>':'')+'</div></div><div class="acts">'+acts+'</div></div>';
   }
 
   var dashY=new Date().getFullYear(), dashM=new Date().getMonth(), dashS="all";
   var THS=["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
   var THF=["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
   function ymKey(y,m){return y+"-"+(m<9?"0":"")+(m+1)}
-  function isDone(t){return !!t.done}
-  function isOver(t){return !t.done&&dueDate(t)<new Date()}
+  function isDone(t){return stOf(t)==="submitted"}
+  function isOver(t){return stOf(t)!=="submitted"&&dueDate(t)<new Date()}
 
   function renderDash(){
     var pool=tasks.filter(function(t){return dashS==="all"||t.scope===dashS});
@@ -255,18 +266,19 @@ window.FIREBASE_CONFIG = {
     h+='<div class="chips">';
     [["all","ทั้งหมด"],["dept","งานแผนกวิชา"],["personal","งานส่วนตัว"]].forEach(function(c){h+='<button class="chip'+(dashS===c[0]?' on':'')+'" data-ds="'+c[0]+'">'+c[1]+'</button>'});
     h+='</div>';
-    h+='<div class="dgrid"><div class="stat"><span>งานทั้งหมด</span><b>'+total+'</b></div><div class="stat ok"><span>ส่งแล้ว</span><b>'+done+'</b></div><div class="stat warn"><span>ยังค้างอยู่</span><b>'+pend+'</b></div><div class="stat bad"><span>เลยกำหนด</span><b>'+over+'</b></div></div>';
-    h+='<div class="card"><div class="sec" style="margin:0 0 8px"><h2>ความคืบหน้าเดือนนี้</h2><span class="count">'+rate+'%</span></div><div class="pbar"><i style="width:'+rate+'%"></i></div></div>';
+    var nDo=mt.filter(function(t){return stOf(t)==="doing"}).length, nFin=mt.filter(function(t){return stOf(t)==="finished"}).length;
+    h+='<div class="dgrid"><div class="stat"><span>งานทั้งหมด</span><b>'+total+'</b></div><div class="stat doing"><span>กำลังดำเนินการ</span><b>'+nDo+'</b></div><div class="stat fin"><span>เสร็จแล้ว</span><b>'+nFin+'</b></div><div class="stat ok"><span>ส่งแล้ว</span><b>'+done+'</b></div><div class="stat bad"><span>เลยกำหนด</span><b>'+over+'</b></div></div>';
+    h+='<div class="card"><div class="sec" style="margin:0 0 8px"><h2>ส่งแล้วในเดือนนี้</h2><span class="count">'+rate+'%</span></div><div class="pbar"><i style="width:'+rate+'%"></i></div></div>';
     h+='<div class="card"><div class="sec" style="margin:0 0 10px"><h2>ภาพรวมทั้งปี '+(dashY+543)+'</h2><span class="count">แท่งเขียว = ส่งแล้ว · กดเพื่อเลือกเดือน</span></div><div class="ychart">';
     mo.forEach(function(x,i){var hh=Math.round(x.t/max*100);var dh=x.t?Math.round(x.d*100/x.t):0;
       h+='<button class="ycol'+(i===dashM?' on':'')+'" data-m="'+i+'"><em>'+(x.t||'')+'</em><div class="ybar" style="height:'+(x.t?Math.max(hh,4):2)+'px"><div class="ydone" style="height:'+dh+'%"></div></div><span>'+THS[i]+'</span></button>'});
     h+='</div></div>';
-    var by={};mt.forEach(function(t){var k=(t.owner||"").trim()||"ไม่ระบุ";by[k]=by[k]||{t:0,d:0};by[k].t++;if(t.done)by[k].d++});
+    var by={};mt.forEach(function(t){var k=(t.owner||"").trim()||"ไม่ระบุ";by[k]=by[k]||{t:0,d:0};by[k].t++;if(stOf(t)==="submitted")by[k].d++});
     var ks=Object.keys(by).sort(function(a,b){return by[b].t-by[a].t});
     h+='<div class="card"><div class="sec" style="margin:0 0 10px"><h2>👤 แยกตามผู้รับผิดชอบ</h2><span class="count">'+ks.length+' คน</span></div>';
     h+=ks.length?ks.map(function(k){var o=by[k];return '<div class="orow"><div class="oname">'+esc(k)+'</div><div class="pbar"><i style="width:'+Math.round(o.d*100/o.t)+'%"></i></div><div class="onum">'+o.d+'/'+o.t+'</div></div>'}).join(""):'<div class="empty">ไม่มีงานในเดือนนี้</div>';
     h+='</div>';
-    var pl=mt.filter(function(t){return !t.done}).sort(function(a,b){return dueDate(a)-dueDate(b)});
+    var pl=mt.filter(function(t){return stOf(t)!=="submitted"}).sort(function(a,b){return dueDate(a)-dueDate(b)});
     h+='<div class="sec"><h2>⏳ งานค้างของเดือนนี้</h2><span class="count">'+pl.length+' รายการ</span></div>';
     h+=pl.length?pl.map(taskHTML).join(""):'<div class="empty">'+(total?'🎉 เคลียร์งานเดือนนี้ครบแล้ว':'ไม่มีงานในเดือนนี้')+'</div>';
     view.innerHTML=h;
@@ -290,14 +302,16 @@ window.FIREBASE_CONFIG = {
       return;
     }
     var list=byTab(tab).sort(function(a,b){return dueDate(a)-dueDate(b)});
-    var pend=list.filter(function(t){return !t.done}), done=list.filter(function(t){return t.done}).sort(function(a,b){return (b.doneAt||0)-(a.doneAt||0)});
+    var dg=list.filter(function(t){return stOf(t)==="doing"}), fn=list.filter(function(t){return stOf(t)==="finished"}), done=list.filter(function(t){return stOf(t)==="submitted"}).sort(function(a,b){return (b.doneAt||0)-(a.doneAt||0)});
     var h='';
     if(canWrite){
       h+='<div class="card"><div class="form"><div class="f-title"><label for="f-title">งานที่ต้องทำ</label><input id="f-title" maxlength="200" placeholder="เช่น ส่งแผนการสอนภาคเรียนที่ 2"></div><div><label for="f-due">วันที่ต้องส่ง</label><input id="f-due" type="date"></div><div><label for="f-time">เวลา</label><input id="f-time" type="time"></div><div><label for="f-owner">ผู้รับผิดชอบ</label><input id="f-owner" maxlength="80" placeholder="ชื่อผู้รับผิดชอบ"></div><div class="f-btn"><button class="btn" id="add" style="width:100%">＋ เพิ่มงาน</button></div></div><div class="err" id="ferr" style="margin-top:6px"></div></div>';
     }
-    h+='<div class="sec"><h2>⏳ งานค้าง</h2><span class="count">'+pend.length+' รายการ</span></div>';
-    h+=pend.length?pend.map(taskHTML).join(""):'<div class="empty">🎉 ไม่มีงานค้าง</div>';
-    h+='<div class="sec"><h2>✅ ส่งแล้ว</h2><span class="count">'+done.length+' รายการ · <button class="link" id="tgl">'+(showDone?"ซ่อน":"แสดง")+'</button></span></div>';
+    h+='<div class="sec"><h2>⏳ กำลังดำเนินการ</h2><span class="count">'+dg.length+' รายการ</span></div>';
+    h+=dg.length?dg.map(taskHTML).join(""):'<div class="empty">ไม่มีงานที่กำลังดำเนินการ</div>';
+    h+='<div class="sec"><h2>✔️ เสร็จแล้ว</h2><span class="count">'+fn.length+' รายการ</span></div>';
+    h+=fn.length?fn.map(taskHTML).join(""):'<div class="empty">ยังไม่มีงานที่เสร็จแล้ว</div>';
+    h+='<div class="sec"><h2>📤 ส่งแล้ว</h2><span class="count">'+done.length+' รายการ · <button class="link" id="tgl">'+(showDone?"ซ่อน":"แสดง")+'</button></span></div>';
     if(showDone)h+=done.length?done.map(taskHTML).join(""):'<div class="empty">ยังไม่มีงานที่ส่งแล้ว</div>';
     var keep=captureForm();
     view.innerHTML=h;
@@ -313,7 +327,7 @@ window.FIREBASE_CONFIG = {
     if(add)add.onclick=addTask;
     var t=$("#f-title");if(t)t.onkeydown=function(e){if(e.key==="Enter")addTask()};
     var g=$("#tgl");if(g)g.onclick=function(){showDone=!showDone;render()};
-    view.querySelectorAll("[data-a]").forEach(function(b){b.onclick=function(){act(b.dataset.a,b.dataset.id)}});
+    view.querySelectorAll("[data-a]").forEach(function(b){b.onclick=function(){act(b.dataset.a,b.dataset.id,b.dataset.s)}});
   }
 
   function fail(e){$("#ferr")&&($("#ferr").textContent="บันทึกไม่สำเร็จ ("+(e&&e.code||"error")+") ลองใหม่อีกครั้ง")}
@@ -325,18 +339,17 @@ window.FIREBASE_CONFIG = {
     if(!due){err.textContent="กรุณาเลือกวันที่ต้องส่ง";return}
     var id="t"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
     var btn=$("#add");btn.disabled=true;
-    col.doc(id).set({scope:tab,title:title,due:due,time:time||"",owner:owner,done:false,doneAt:0,createdAt:Date.now()}).then(function(){
+    col.doc(id).set({scope:tab,title:title,due:due,time:time||"",owner:owner,status:"doing",done:false,doneAt:0,createdAt:Date.now()}).then(function(){
       ["title","due","time"].forEach(function(k){var e=$("#f-"+k);if(e)e.value=""});
       var b=$("#add");if(b)b.disabled=false;var ti=$("#f-title");if(ti)ti.focus();
     }).catch(function(e){var b=$("#add");if(b)b.disabled=false;fail(e)});
   }
 
-  function act(a,id){
+  function act(a,id,st){
     var ref=col.doc(id),t=tasks.filter(function(x){return x.id===id})[0];
     if(!t)return;
     if(a==="del"){if(confirm("ลบงาน \""+t.title+"\" ใช่หรือไม่?"))ref.delete().catch(fail)}
-    else if(a==="done"){ref.update({done:true,doneAt:Date.now()}).catch(fail)}
-    else if(a==="undo"){ref.update({done:false,doneAt:0}).catch(fail)}
+    else if(a==="set"){if(stOf(t)===st)return;ref.update({status:st,done:st==="submitted",doneAt:st==="submitted"?Date.now():0}).catch(fail)}
   }
 
   document.querySelectorAll(".tab").forEach(function(b){b.onclick=function(){tab=b.dataset.t;render()}});
